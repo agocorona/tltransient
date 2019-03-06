@@ -13,13 +13,19 @@ Motivation:
 This is an example using the debugger:
 
 ```bash
->ghci Main.hs
+>ghci Main.hs 
 *Main> :t async :: IO a -> TRS '[Async, MThread] a
+
 *Main> :t waitEvents
+
 waitEvents :: IO a -> TRS '[Streaming, MThread] a
+
 *Main> appasync= async (P.return "hello") <|> waitEvents (P.return "wold")
+
 *Main> :t appasync
+
 appasync :: TRS '[Async, MThread, Streaming] [Char]
+
 *Main>
 ```
 
