@@ -12,4 +12,4 @@ Motivation:
 To do:
 1) create modules for transient , universe and axiom 
 2) enclose the Cloud monad and the widget monad to the same graded monad (TSR)
-3) manage parameterized states, like `State a`
+3) manage parameterized states, like `State Int` instead of `StateInt` or `Threads 5` instead of `Multithreaded`
