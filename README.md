@@ -32,5 +32,5 @@ appasync :: TRS '[Async, MThread, Streaming] [Char]
 To do:
 1) create modules for transient , universe and axiom 
 2) enclose the Cloud monad and the widget monad to the same graded monad (TSR)
-3) manage parameterized states, like `State Int` instead of `StateInt` or `Threads 5` instead of `Multithreaded`
+3) manage parameterized effects, like `State Int` instead of `StateInt` or `Threads 5` instead of `Multithreaded`
 4) Handle spurious complex type errors when variables not in scope
