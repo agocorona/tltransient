@@ -1,0 +1,53 @@
+
+name:           tltransient
+version:        0.1.0.0
+synopsis:       Saasas
+description:    Please see the README on Github at <https://github.com/githubuser/tltransient#readme>
+homepage:       https://github.com/agocorona/tltransient#readme
+bug-reports:    https://github.com/agocorona/tltransient/issues
+author:         Alberto Gómez Corona  
+maintainer:     agocorona@gmail.com
+copyright:      Alberto Gómez Corona  
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+cabal-version:  >= 1.10
+
+extra-source-files:
+    ChangeLog.md
+    README.md
+
+source-repository head
+  type: git
+  location: https://github.com/agocorona/tltransient
+
+-- library
+--   hs-source-dirs:
+--       src
+--   build-depends:
+--       base >= 4.7 && < 5
+--   exposed-modules:
+--       Lib
+--   default-language: Haskell2010
+
+executable tltransient-exe
+  main-is: Main.hs
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >= 4.7 && < 5
+    , transient, type-level-sets, effect-monad, mtl
+
+  default-language: Haskell2010
+
+-- test-suite tltransient-test
+--   type: exitcode-stdio-1.0
+--   main-is: Spec.hs
+--   hs-source-dirs:
+--       test
+--   ghc-options: -threaded -rtsopts -with-rtsopts=-N
+--   build-depends:
+--       base >= 4.7 && < 5
+--     , tltransient
+--   default-language: Haskell2010
