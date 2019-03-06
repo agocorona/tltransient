@@ -1,5 +1,6 @@
 # tltransient
-Type-level transient
+Type-level transient.
+
 An experiment to add detailed effect types for [transient](https://github.com/transient-haskell/transient) using @dorchard [type-level-sets](https://github.com/dorchard/type-level-sets) and a very simple graded monad.
 
 Motivation:  
