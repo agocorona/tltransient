@@ -11,7 +11,7 @@ import Prelude  hiding (return, (>>=), (>>))
 import qualified Prelude as P (return, (>>=)) 
 import qualified Control.Applicative as A
 
-import qualified Transient.Base as Tr
+import qualified Transient.Internals as Tr
 import qualified Transient.Indeterminism as In
 import qualified Transient.Move as Cl
 
@@ -94,9 +94,10 @@ instance T.MonadTrans (TR eff) where
 liftIO  :: IO a -> TRS '[IOEff] a
 liftIO = TR . T.liftIO
 
+-- lift the Cloud monad
 liftCl  :: Cl.Cloud a -> TRS effs a
 liftCl = TR . Cl.runCloud'
-
+ 
 
 instance Functor m => Functor (TR eff m) where
     fmap f (TR x)= TR $ fmap f x 
