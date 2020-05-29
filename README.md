@@ -1,7 +1,7 @@
 # tltransient
 Type-level transient.
 
-An experiment to add detailed effect types for [transient](https://github.com/transient-haskell/transient) using @dorchard [type-level-sets](https://github.com/dorchard/type-level-sets) and a very simple graded monad.
+An experiment to add detailed effect types for [transient](https://github.com/transient-haskell/transient) using a very simple graded monad.
 
 Motivation:  
 1) Stronger compile-time guarantees: some primitives, [like "collect"](https://gitter.im/Transient-Transient-Universe-HPlay/Lobby?at=5a65cf56ae53c159031bd123) do not work with infinite streams when there is only one thread available (threads 1).
