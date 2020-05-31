@@ -7,7 +7,7 @@ It adds detailed effect types for [transient](https://github.com/transient-haske
 
 It will be a part of the transient stack. User can opt-in or opt-out to use it with the same code. At least this is the purpose.
 
-It is by no means complete. There are now only redefinitions for the modules Transient.Base and Transient.Move.
+It is by no means complete. There are now only redefinitions for some modules. For each transient module It will be a Transient.TypeLevel.Module.
 
 Motivation:  
 1) Stronger compile-time guarantees: Some primitives, [like "collect"](https://gitter.im/Transient-Transient-Universe-HPlay/Lobby?at=5a65cf56ae53c159031bd123) do not work with infinite streams when there is only one thread available (threads 1).
@@ -27,21 +27,21 @@ T (required ::[*])  (produced ::[*]) a
 That is: T(ype), the required effects necessary for the computation and the effects produced by the computation.
 
 
-The effects defined are
+The effects defined upto now are:
 
-data EarlyTermination   -- The computation can stop
-data Async              -- may produce a response at a later time
-data IOEff              -- IO
+- EarlyTermination   -- The computation can stop
+- Async              -- may produce a response at a later time
+- IOEff              -- IO
 
-data State a            -- State of type  `a`
-data RState a           -- Mutable state, or reader (STRef)  of type `a`
-data Streaming          -- Infinite stream
-data MThread            -- Multi-threaded
-data Throws e           -- Throws an exception of type  e
-data Handle e           -- Handles an exception of type e
-data TerminalInput      -- Uses the console
-data Logged             -- The computation result has been logged
-data Cloud              -- Perform remote computations
+- State a            -- State of type  `a`
+- RState a           -- Mutable state, or reader (STRef)  of type `a`
+- Streaming          -- Infinite stream
+- MThread            -- Multi-threaded
+- Throws e           -- Throws an exception of type  e
+- Handle e           -- Handles an exception of type e
+- TerminalInput      -- Uses the console
+- Logged             -- The computation result has been logged
+- Cloud              -- Perform remote computations
 
 A computation can not compile if the required effects are not satisfied.
 
