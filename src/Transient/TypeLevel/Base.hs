@@ -11,12 +11,10 @@ import Control.Exception
 data State a 
 data RState a 
 
-data Streaming 
 data MThread  -- Multi-threaded
 data Throws e
 data Handle e
 data TerminalInput
-data Logged
 
 
 -- * Composition Operators

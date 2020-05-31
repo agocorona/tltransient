@@ -16,7 +16,9 @@ extra-source-files:  ChangeLog.md, README.md
 cabal-version:       >=1.10
 
 library
-  exposed-modules:     Transient.TypeLevel.Move, Transient.TypeLevel.Effects, Transient.TypeLevel.Base
+  exposed-modules:     Transient.TypeLevel.Move, Transient.TypeLevel.Effects, 
+                       Transient.TypeLevel.Base, Transient.TypeLevel.Backtrack,
+                       Transient.TypeLevel.EVars, Transient.TypeLevel.Logged
   -- other-modules:
   other-extensions:    CPP, DataKinds, TypeOperators, FlexibleContexts, GADTs, KindSignatures, TypeFamilies, MultiParamTypeClasses, FlexibleInstances, PolyKinds, UndecidableInstances, ConstraintKinds, ScopedTypeVariables, RebindableSyntax, GeneralizedNewtypeDeriving
   build-depends:       base >=4.11 && <10, transient-universe >=0.5, bytestring , 

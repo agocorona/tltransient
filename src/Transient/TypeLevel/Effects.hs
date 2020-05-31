@@ -24,6 +24,8 @@ import qualified Data.Monoid as M
 data EarlyTermination 
 data Async -- may produce a response at a later time
 data IOEff
+data Streaming 
+data Logged
 
 
 -- Courtesy of Tim Pierson:
