@@ -1,6 +1,7 @@
 {-# LANGUAGE DataKinds, TypeOperators, FlexibleContexts, TypeFamilies  #-}
 module Transient.TypeLevel.Base where
 
+import Prelude
 import qualified Transient.Base as Tr
 import Transient.TypeLevel.Effects
 import Data.Typeable
@@ -11,10 +12,10 @@ import Control.Exception
 data State a 
 data RState a 
 
-data MThread  -- Multi-threaded
 data Throws e
 data Handle e
-data TerminalInput
+data Terminal
+
 
 
 -- * Composition Operators
@@ -52,16 +53,16 @@ exit = TR . Tr.exit
 
 option :: (Typeable b, Show b, Read b, Eq b)
        => b -> String  
-       -> T '[] '[TerminalInput]  b
+       -> T '[] '[Terminal]  b
 option ret prompt= TR $ Tr.option ret prompt
 
 input :: (Typeable a, Read a,Show a) 
       =>  (a -> Bool) 
       -> String 
-      -> T '[] '[TerminalInput]  a
+      -> T '[] '[Terminal]  a
 input val prompt= TR  $ Tr.input val prompt
 
-input' :: (Typeable a, Read a,Show a) => Maybe a -> (a -> Bool) -> String -> T '[] '[TerminalInput]  a
+input' :: (Typeable a, Read a,Show a) => Maybe a -> (a -> Bool) -> String -> T '[] '[Terminal]  a
 input' ma val prompt= TR $ Tr.input' ma val prompt
 
 
@@ -96,15 +97,13 @@ set = TR . Tr.setData
 
 get :: Typeable a => T '[State a] '[] a
 get = getSData  <|> error "get: this should not execute"
---   where
---   reteff    ::  a ->  T '[] '[EarlyTermination] a
---   reteff  =  TR. P.return 
+
 
 
 setData :: Typeable a => a -> T '[]  '[State a]  ()
 setData= set
 
-getSData ::  Typeable a => T '[] '[EarlyTermination]  a
+getSData ::  Typeable a => T '[] '[Maybe Terminates]  a
 getSData = TR  Tr.getSData
 
 getData :: Typeable a => T '[] '[] (Maybe a)
@@ -125,7 +124,7 @@ try (TR mx)= TR $ Tr.try mx
 setState :: Typeable a => a -> T '[]  '[State a]  ()
 setState= setData
 
-getState ::  Typeable a => T '[] '[EarlyTermination]  a
+getState ::  Typeable a => T '[] '[Maybe  Terminates]  a
 getState= getSData
 
 delState :: Typeable a => a -> T '[] '[] ()
@@ -134,7 +133,7 @@ delState= delData
 modifyState :: Typeable a => (Maybe a -> Maybe a) -> T '[] '[] ()
 modifyState= modifyData
 
-getRState :: Typeable a => T '[] '[EarlyTermination]  a
+getRState :: Typeable a => T '[] '[Maybe Terminates]  a
 getRState = TR Tr.getRState
 
 setRState :: Typeable a => a -> T '[] '[RState a] ()

@@ -4,19 +4,43 @@ import qualified Prelude as P
 import Transient.TypeLevel.Effects
 import Transient.TypeLevel.Base 
 import Transient.TypeLevel.Move
+import Transient.TypeLevel.Indeterminism
 import Control.Exception hiding (onException)
-
 
 test1=  atRemote $ local $ do
         set  (0:: Int)
         x <- get
         liftIO $ putStrLn x 
+        --guard $ x=="hello"
         onException $ \(SomeException e) -> liftIO $ print e
-        (x :: Int) <-  getState   -- <|> return 0
+        x  <-  getState   <|> return 0
         r <- ( liftIO (print "hello") >> async (P.return "hello"))  <|> waitEvents (P.return "world")
-        --liftIO $ print (r,x :: Int)
-        return  ()
-        
+        liftIO $ print (r,x :: Int)
+        empty
+        return()
+{-
+
+expresiones con guard -> Maybe Terminates
+expresionescon empty solo, o getSData etc ->Terminates
+expresiones  con alternativo: eliminar terminates
+
+async anula termination en alternativo   alternativo directamente anula termination
+empty es  termination
+guard  es   Maybe termination
+-}       
+
+test8= do
+    x <- choose [1..10:: Int]
+    guard $ x `rem` 2 == 0 
+    liftIO $ print x
+
+test9= do
+   test8
+   empty
+
+ifThenElse :: Bool -> a -> a -> a
+ifThenElse True  x _ = x
+ifThenElse False _ y = y
 
 
 -- >>> :t async
@@ -26,6 +50,10 @@ test1=  atRemote $ local $ do
 -- >>> :t waitEvents
 -- waitEvents :: IO a -> T '[Streaming, MThread] a
 --
+
+test7=   do guard False; liftIO $ print "hello" 
+
+
 
 test =  do
         x <- get
@@ -37,7 +65,7 @@ test =  do
 data HasPaid
 data SentStuff
 
-pay  ::Int->  Tn '[HasPaid]()
+pay  ::Int->  T '[] '[HasPaid]()
 pay i=  undefined
 
 sendStuff ::   T '[HasPaid] '[SentStuff] ()

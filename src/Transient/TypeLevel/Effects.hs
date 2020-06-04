@@ -18,14 +18,16 @@ import qualified Transient.Move as Cl
 
 import qualified Control.Monad.Trans as T
 import qualified Data.Monoid as M
+import qualified Control.Monad as M (guard)
 
 
-
-data EarlyTermination 
+data Terminates 
 data Async -- may produce a response at a later time
 data IOEff
 data Streaming 
 data Logged
+data MThread  -- Multi-threaded
+
 
 
 -- Courtesy of Tim Pierson:
@@ -130,21 +132,22 @@ type family MNub x xs :: [*] where
 
 
 
-type family Alter xs ys :: [*] where
+type family (:||) xs ys :: [*] where
 
-    Alter  '[] xs= xs
+    (:||)  '[] xs= xs
 
-    Alter  (Async : xs) ys= Alter1 xs ( MNub Async ys)
+    (:||)  (Async : xs) ys= Alter1 xs ( MNub Async ys)
 
-    Alter  (x : xs) (x:ys)=   (x: (Alter xs  ys))
+    (:||)  (x : xs) (x:ys)=   (x: ((:||) xs  ys))
 
-    Alter  (x : xs) ys=   (x: (Alter xs  ys))
+    (:||)  (x : xs) ys=   (x: ((:||) xs  ys))
 
 
 
 type family Alter1 xs ys :: [*] where
 
     Alter1   '[] xs= xs
+    
     Alter1  (x : xs) ys= Alter1 xs (MNub x  ys)
 ---------------------------
 
@@ -156,20 +159,19 @@ type family Alter1 xs ys :: [*] where
 
 
 
-newtype TR (req:: [*]) (eff:: [*]) m a= TR  (m a)                  
+newtype TR (req:: [*]) (eff:: [*]) m a= TR  (m a)   deriving(Applicative, A.Alternative, Monad)
 
-type T (req:: [*]) (eff:: [*])  a = TR (req:: [*]) (eff:: [*]) Tr.TransIO a 
+type T (req:: [*]) (eff:: [*])  a = TR (req:: [*]) (eff:: [*]) Tr.TransIO a
 
 
 type Pure a= T '[]'[] a
 
-type Tn e x= T '[] e x
 
 instance T.MonadTrans (TR eff1 eff) where
     lift = TR
 
        --instance MonadIO m => MonadIO (TR eff m) where
-liftIO  :: IO a -> Tn '[IOEff] a
+liftIO  :: IO a -> T '[] '[IOEff] a
 liftIO = TR . T.liftIO
 
 -- lift the Cloud monad
@@ -183,13 +185,13 @@ instance Functor m => Functor (TR eff1 eff m) where
                                 -- coerceEffs :: TR effs m a -> TR effs' m a
                                 -- coerceEffs (TR comp)= TR comp
 
-empty ::  Tn '[EarlyTermination] a
+empty ::  T '[] '[Terminates] a
 empty= TR A.empty
 
 
 (<|>) :: T (req ::[*]) (effs :: [*]) a 
       -> T (req' ::[*]) (effs' ::[*]) a 
-      -> T (req :++ req') (Alter ( effs  :\ EarlyTermination) effs' ) a
+      -> T (req :++ req') ((:||) ( effs  :\ Terminates) effs' ) a
 TR a <|> TR b=  TR $  a A.<|>  b
 
 (<*>) :: T (req ::[*]) (effs ::[*]) (a -> b) 
@@ -198,7 +200,7 @@ TR a <|> TR b=  TR $  a A.<|>  b
 
 TR a <*> TR b=  TR $  a A.<*>  b
 
-mempty :: Monoid a => Tn '[] a
+mempty :: Monoid a => T '[] '[] a
 mempty = TR M.mempty
 
 (<>) ::  Monoid a => T (req ::[*])(effs ::[*]) a 
@@ -207,9 +209,11 @@ mempty = TR M.mempty
 
 TR a <> TR b=  TR $  a M.<>  b
 
-return :: a -> Tn '[] a
+return :: a -> T '[] '[] a
 return= TR. P.return 
 
+retEff ::a -> T '[] eff a
+retEff= TR. P.return
 
 
 (>>=) :: T (req ::[*]) (effs ::[*]) a -> (a -> T (req' ::[*])  (effs' ::[*]) b) 
@@ -221,3 +225,8 @@ return= TR. P.return
           -> T req' effs' b
           -> T ((req :++ req') :\\ (effs' :++ effs)) (effs' :++ effs) b
 a >> b = a >>= \_ -> b
+
+guard  :: Bool -> T '[] '[Maybe Terminates] ()
+guard= M.guard
+
+

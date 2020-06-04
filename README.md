@@ -24,22 +24,22 @@ The types in typelevel-transient contains:
 ```haskell
 T (required ::[*])  (produced ::[*]) a
 ```
-That is: T(ype), the required effects necessary for the computation and the effects produced by the computation.
+That is, It contains the T(ype), the required effects necessary for the computation and the effects produced by the computation.
 
 
 The effects defined upto now are:
 
-- EarlyTermination   -- The computation can stop
-- Async              -- may produce a response at a later time
+- Terminates   -- The computation can stop
+- Async              -- May produce a response at a later time
 - IOEff              -- IO
 
 - State a            -- State of type  `a`
-- RState a           -- Mutable state, or reader (STRef)  of type `a`
-- Streaming          -- Infinite stream
+- RState a           -- Mutable state, like reader (like STRef)  of type `a`
+- Streaming          -- produces an nfinite stream
 - MThread            -- Multi-threaded
 - Throws e           -- Throws an exception of type  e
 - Handle e           -- Handles an exception of type e
-- TerminalInput      -- Uses the console
+- Terminal           -- Uses the console
 - Logged             -- The computation result has been logged
 - Cloud              -- Perform remote computations
 
@@ -53,11 +53,11 @@ For example in the image above, test1 requires  `State String`. If I try to exec
 <interactive>:1:7: error:
     • Couldn't match type ‘'[State String]’ with ‘'[]’
       Expected type: T '[]
-                       '[State Int, IOEff, Handle SomeException, EarlyTermination, Async,
+                       '[State Int, IOEff, Handle SomeException, Terminates, Async,
                          Maybe Streaming, MThread, Logged, Cloud]
                        ()
         Actual type: T '[State String]
-                       '[State Int, IOEff, Handle SomeException, EarlyTermination, Async,
+                       '[State Int, IOEff, Handle SomeException, Terminates, Async,
                          Maybe Streaming, MThread, Logged, Cloud]
                        ()
     • In the first argument of ‘keep'’, namely ‘test1’
@@ -76,15 +76,15 @@ does type check and executes (It produces a runtime error since atRemote neeed a
 
 ## Custom effects ##
 
-One really cool thing of this system , in my opinion, is the really low cost for creating custom effects in order to control invariants of the domain problem effectively.
+One cool thing of this system is the low cost of creating custom effects that may be used as constraints in order to control conditions of the domain problem effectively.
 
-Here I want to make sure that the stuff is not sent before the  payment has been processed:
+Here I want to make sure that the stuff is not sent before the payment has been processed:
 
 ```bash
 data HasPaid
 data SentStuff
 
-pay  ::Int->  T '[]  '[HasPaid]()
+pay  ::Int->  T '[] '[HasPaid]()
 pay i=  undefined
 
 sendStuff ::   T '[HasPaid] '[SentStuff] ()
