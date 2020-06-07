@@ -86,7 +86,7 @@ spawn = TR . Tr.waitEvents
 sample :: Eq a => IO a -> Int -> T '[] '[Streaming,MThread] a
 sample f n= TR $ Tr.sample f n
 
-abduce :: T '[] '[]  ()
+abduce :: T '[] '[Async,MThread]  ()
 abduce = TR Tr.abduce
 
 -- * State management
@@ -96,8 +96,7 @@ set = TR . Tr.setData
 
 
 get :: Typeable a => T '[State a] '[] a
-get = getSData  <|> error "get: this should not execute"
-
+get = TR Tr.getSData  
 
 
 setData :: Typeable a => a -> T '[]  '[State a]  ()

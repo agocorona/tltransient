@@ -116,6 +116,8 @@ type family MNub x xs :: [*] where
 
     MNub x '[] = '[Maybe x]
 
+    --MNub x ( Maybe Terminates :xs) = MNub x xs
+
     MNub (Maybe x) (Maybe x:xs)= (x : xs)
 
     MNub (Maybe x) (Maybe y:xs)= (Maybe x : MNub (Maybe y)  xs)
@@ -131,24 +133,44 @@ type family MNub x xs :: [*] where
     MNub y (x : xs) = ( Maybe x : MNub y  xs)
 
 
-
+-- To treat alternatives
 type family (:||) xs ys :: [*] where
 
-    (:||)  '[] xs= xs
+    (:||)  '[] '[]= '[]
 
-    (:||)  (Async : xs) ys= Alter1 xs ( MNub Async ys)
+    (:||)  '[]  _= '[]
 
-    (:||)  (x : xs) (x:ys)=   (x: ((:||) xs  ys))
+    (:||) (Terminates:_) xs=  FilterTerminate xs 
 
-    (:||)  (x : xs) ys=   (x: ((:||) xs  ys))
+    (:||) xs (Terminates:ys)=  FilterTerminate xs
+
+    (:||) (Maybe Terminates : xs) ys= (Alter1 xs ( MNub (Maybe Terminates) ys)) :\ Maybe (Maybe Terminates)
+
+    (:||) (Async : xs) ys= Alter1 xs ( MNub Async ys)
 
 
+    --(:||)  (Terminates : _) ys= ys
 
+    (:||)  (x : xs) (x:ys)=   (x: (xs :|| ys))
+
+    (:||)  (x : xs) ys    =   (x: (xs :|| ys))
+
+
+-- to treat when the first term has a "Async"
 type family Alter1 xs ys :: [*] where
 
     Alter1   '[] xs= xs
-    
+
     Alter1  (x : xs) ys= Alter1 xs (MNub x  ys)
+
+
+
+-- to filter any effect after "Terminates"
+type family FilterTerminate xs ::[*] where
+    FilterTerminate '[]= '[]
+    FilterTerminate (Terminates:xs)= '[]
+    FilterTerminate (x:xs)= x:FilterTerminate  xs
+
 ---------------------------
 
 
@@ -191,7 +213,7 @@ empty= TR A.empty
 
 (<|>) :: T (req ::[*]) (effs :: [*]) a 
       -> T (req' ::[*]) (effs' ::[*]) a 
-      -> T (req :++ req') ((:||) ( effs  :\ Terminates) effs' ) a
+      -> T (req :++ req') ( effs  :|| effs' ) a
 TR a <|> TR b=  TR $  a A.<|>  b
 
 (<*>) :: T (req ::[*]) (effs ::[*]) (a -> b) 

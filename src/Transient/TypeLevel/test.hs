@@ -29,19 +29,47 @@ empty es  termination
 guard  es   Maybe termination
 -}       
 
-test8= do
-    x <- choose [1..10:: Int]
-    guard $ x `rem` 2 == 0 
-    liftIO $ print x
+-- test8 = do
+--     x <- choose [1..10:: Int]
+--     if x `rem` 2 == 0 then empty else liftIO $ print x 
+    -- liftIO $ print x
 
-test9= do
-   test8
-   empty
+-- test9= do
+--    test8
+--    empty
+
+--test10 x= if x == 5 then liftIO $ print x else askfornumber
+  
+
+
+askfornumber= do
+      n <- input (<10) "give me a number >"  
+      liftIO $ print (n :: Int)
+
+
+test11 x=  is5 x <|>  askfornumber
+ where
+ is5 x=   do guard $ x==5; liftIO $print x
+
+
+
+
+
+
+
+
+test12=  (do input (==(1::Int)) ""  ; empty; liftIO $putStrLn "Hello")<|>get
+
+test15= input (const True) "" <|> liftIO (print ()) -- no deberia reflejar IOError
 
 ifThenElse :: Bool -> a -> a -> a
-ifThenElse True  x _ = x
-ifThenElse False _ y = y
+ifThenElse True  x _ =  x
+ifThenElse False _ y =  y
 
+
+{-
+efecto terminates no vale porque es eliminado por <|>? 
+-}
 
 -- >>> :t async
 -- async :: IO a -> T '[Async, MThread] a
@@ -56,8 +84,8 @@ test7=   do guard False; liftIO $ print "hello"
 
 
 test =  do
-        x <- get
-        liftIO $ putStrLn x 
+        --x <- get
+        --liftIO $ putStrLn x 
         async (P.return "hello")  <|> (liftIO (print "HELLO") >> waitEvents (P.return "world") )
 
 
@@ -70,6 +98,7 @@ pay i=  undefined
 
 sendStuff ::   T '[HasPaid] '[SentStuff] ()
 sendStuff =undefined
+
 
 
 test5= liftIO (print "hello") >> (return "hello" >> sendStuff)
@@ -105,26 +134,33 @@ concat  (x : xs) ys= concat xs ( x `cons` ys)
 
 
 mnub :: X -> [X] -> [X]
-mnub x [] = [M $ Just x]
 
-mnub (M (Just x)) (M(Just y):xs)
+ 
+mnub x [] = [Maybe1 $  x]
+
+mnub (Maybe1 ( x)) (Maybe1( y):xs)
   | x==y= (x : xs)
-  | otherwise=  (M(Just x) : mnub (M $ Just y)  xs)
+  | otherwise=  (Maybe1( x) : mnub (Maybe1 $  y)  xs)
 
-mnub y (M(Just x) : xs)
+mnub y (Maybe1( x) : xs)
   | x == y = (x : xs)
-  | otherwise=  ( M(Just x) : mnub y  xs)
+  | otherwise=  ( Maybe1( x) : mnub y  xs)
 
 mnub y (x : xs)
   | x==y = (x : xs)
   | x == Async1 = (x : mnub y xs)
-  | otherwise= ( M(Just x) : mnub y  xs)
+  | otherwise= ( Maybe1( x) : mnub y  xs)
 
 
 
-data X = Async1 | MThread1 |IOEff1 | Streaming1 | M (Maybe X) deriving (Eq,Show)
+data X =  Terminates1 |  Terminal1 | Async1 | MThread1 |IOEff1 | Streaming1 | Maybe1 ( X) deriving (Eq,Show)
+
+alter _ []= []
 
 alter  [] xs= xs
+
+alter  (Maybe1( Terminates1) : xs) ys= alter1 xs  ys
+
 alter  (Async1 : xs) ys= alter1 xs ( mnub Async1 ys)
 
 alter  (x : xs) (ys@(y:ys'))
@@ -132,10 +168,18 @@ alter  (x : xs) (ys@(y:ys'))
 
   | otherwise=   (x: (xs `alter` ys))
 
-
-alter1   [] xs= xs
+alter1 [] []= []
+--alter1  [] (x@(Maybe1 _):xs)= x:alter1 [] xs
+alter1 []xs= xs
+--alter1  [] (x:xs)= Maybe1 x:alter1 [] xs
 alter1  (x : xs) ys= alter1 xs (mnub x  ys)
 ---------------------------
 
 
-test3= [IOEff1,Async1,MThread1] `alter` [IOEff1,Async1,Streaming1, MThread1]
+test3 = [IOEff1,Async1,MThread1] `alter` [IOEff1,Async1,Streaming1, MThread1]
+
+test13= [Maybe1 $  Terminates1 ] `alter` [Terminal1,IOEff1]
+
+test14= [Async1,MThread1 ] `alter` [IOEff1,Async1,Terminal1,IOEff1,MThread1]   -- Maybe Async1  . Debe ser Async1
+
+test16= [Terminal1] `alter` [] 
