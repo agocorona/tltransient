@@ -181,13 +181,13 @@ cutExceptions= TR Tr.cutExceptions
 continue :: T '[] '[] ()
 continue = TR $ Tr.continue
 
-catcht :: Exception e => T req effs b -> (e -> T req' effs' b) -> T (req :++ req') (effs :++ effs' <: Handle e) b
+catcht :: Exception e => T req effs b -> (e -> T req' effs' b) -> T (req :++ req') (effs :++ effs' :\ Throws e) b
 catcht (TR x) (exc) = TR $ x `Tr.catcht` \e -> let TR r= exc e in  r 
 
-throw ::  Exception e => e -> T '[] '[Throws e] a
+throw ::  Exception e => e -> T '[Handle e] '[Throws e] a
 throw = TR . Control.Exception.throw
 
-throwt  :: Exception e => e -> T '[] '[Throws e] a
+throwt  :: Exception e => e -> T '[Handle e] '[Throws e] a
 throwt= TR . Tr.throwt
 
 -- * Utilities

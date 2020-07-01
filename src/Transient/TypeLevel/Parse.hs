@@ -4,11 +4,11 @@ module Transient.TypeLevel.Parse(
 -- * Setting the stream
 setParseStream, setParseString, withParseString, withParseStream,
 -- * parsing
-string, tDropUntilToken, tTakeUntilToken, integer, hex, int, double, 
+string, tDropUntilToken, tTakeUntilToken, integer, hex, int, double, tChar,anyChar
 manyTill, chainManyTill,between, symbol,parens, braces,angles,brackets,
 semi, comma, dot,colon, sepBy, sepBy1, chainSepBy, chainSepBy1,chainMany,
 commaSep, semiSep, commaSep1, dropSpaces,dropTillEndOfLine,
-parseString, tTakeWhile, tTakeWhile', tTake, tDrop, tDropUntil, anyChar, 
+parseString, tTakeWhile,tTakeUntil, tTakeWhile', tTake, tDrop, tDropUntil, tPutStr,
 isDone,dropUntilDone, 
 -- * giving the parse string
 withGetParseString, giveParseString,
@@ -76,6 +76,8 @@ int = TR P.int
 double :: T '[Parse] '[Parse] Double
 double = TR  P.double
 
+tChar :: T '[Parse] '[Parse] Char
+tChar= TR  P.tChar
 
 -- | read many results with a parser (at least one) until a `end` parser succeed.
 manyTill :: T req eff a -> T req' eff' b -> T (Parse :> req :++ req') (Parse :> eff' :++ eff) [a]
@@ -184,6 +186,9 @@ tDropUntil = TR . P.tDropUntil
 
 tTakeUntil ::  (BS.ByteString -> Bool) -> T '[Parse] '[Parse] BS.ByteString
 tTakeUntil = TR . P.tTakeUntil
+
+tPutStr :: String -> T '[Parse] '[Parse] ()
+tPutStr= TR . P.TPut
 
 -- | True if the stream has finished
 isDone :: T '[Parse]'[Parse] Bool

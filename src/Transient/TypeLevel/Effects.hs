@@ -27,6 +27,8 @@ data IOEff
 data Streaming 
 data Logged
 data MThread  -- Multi-threaded
+data Cloud
+data Connected
 
 
 

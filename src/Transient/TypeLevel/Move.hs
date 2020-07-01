@@ -14,9 +14,6 @@ import qualified Data.ByteString.Lazy.Char8             as BS
 import Data.Typeable
 
 
--- effets of this module
-data Cloud
-data Connected
 
 createNodeServ= Tr.createNodeServ
 
