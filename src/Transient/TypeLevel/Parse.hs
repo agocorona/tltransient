@@ -4,7 +4,7 @@ module Transient.TypeLevel.Parse(
 -- * Setting the stream
 setParseStream, setParseString, withParseString, withParseStream,
 -- * parsing
-string, tDropUntilToken, tTakeUntilToken, integer, hex, int, double, tChar,anyChar
+string, tDropUntilToken, tTakeUntilToken, integer, hex, int, double, tChar,anyChar,
 manyTill, chainManyTill,between, symbol,parens, braces,angles,brackets,
 semi, comma, dot,colon, sepBy, sepBy1, chainSepBy, chainSepBy1,chainMany,
 commaSep, semiSep, commaSep1, dropSpaces,dropTillEndOfLine,

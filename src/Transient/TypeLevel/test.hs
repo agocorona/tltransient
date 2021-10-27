@@ -1,13 +1,22 @@
+#!/usr/bin/env execthirdlinedocker.sh
+--  info: use sed -i 's/\r//g' file if report "/usr/bin/env: ‘execthirdlinedocker.sh\r’: No such file or directory"
+-- LIB="/projects/transient-stack" && runghc  -DDEBUG -w  -i${LIB}/transient/src -i${LIB}/transient-universe/src -i${LIB}/transient/src -i${LIB}/transient-universe-tls/src -i${LIB}/axiom/src -i/projects/transient-typelevel/src  $1  ${2} ${3}
+
 {-# LANGUAGE RebindableSyntax, TypeFamilies, TypeOperators,DataKinds,RankNTypes, ScopedTypeVariables #-}
 import  Prelude  hiding ((>>=),(>>),return,concat)
 import qualified Prelude as P 
 import Transient.TypeLevel.Effects
 import Transient.TypeLevel.Base 
 import Transient.TypeLevel.Move
+import Transient.TypeLevel.Move.Utils
 import Transient.TypeLevel.Indeterminism
 import Control.Exception hiding (onException)
 
-test1=  atRemote $ local $ do
+
+main= eff $ keep $ initNode test1
+    
+
+test1= wormhole node $ atRemote $ local $ do
         set  (0:: Int)
         x <- get
         liftIO $ putStrLn x 

@@ -1,7 +1,8 @@
 {-# LANGUAGE GADTs, DataKinds, KindSignatures, TypeOperators, TypeFamilies,
   MultiParamTypeClasses, FlexibleInstances, PolyKinds,
   FlexibleContexts, UndecidableInstances, ConstraintKinds,
-  ScopedTypeVariables, RebindableSyntax, GeneralizedNewtypeDeriving, ScopedTypeVariables #-}
+  ScopedTypeVariables, RebindableSyntax, GeneralizedNewtypeDeriving, ScopedTypeVariables,
+  FunctionalDependencies #-}
   
 
 module Transient.TypeLevel.Effects where
@@ -23,6 +24,7 @@ import qualified Control.Monad as M (guard)
 
 data Terminates 
 data Async -- may produce a response at a later time
+data Wait  -- wait for threads to finish
 data IOEff
 data Streaming 
 data Logged
@@ -191,7 +193,7 @@ type T (req:: [*]) (eff:: [*])  a = TR (req:: [*]) (eff:: [*]) Tr.TransIO a
 type Pure a= T '[]'[] a
 
 
-instance T.MonadTrans (TR eff1 eff) where
+instance T.MonadTrans (TR req eff) where
     lift = TR
 
        --instance MonadIO m => MonadIO (TR eff m) where
@@ -212,10 +214,22 @@ instance Functor m => Functor (TR eff1 eff m) where
 empty ::  T '[] '[Terminates] a
 empty= TR A.empty
 
+-- class AlternativeTL a b c where
+--     (<|>) :: a -> b -> c
+
+-- instance AlternativeTL (T (req:: [*]) (eff:: [*]) a ) a (T (req':: [*]) (eff':: [*]) a) where
+--     x <|> y= x `alter` pure y
+
+-- instance AlternativeTL a (T eff1 eff2 a) (T eff1 eff2 a) where
+--     x <|> y= pure x `alter`  y
+
+-- instance AlternativeTL (T eff1 eff2 a) (T eff1 eff2 a) (T eff1 eff2 a) where
+--     x <|> y= x `alter`  y
+
 
 (<|>) :: T (req ::[*]) (effs :: [*]) a 
-      -> T (req' ::[*]) (effs' ::[*]) a 
-      -> T (req :++ req') ( effs  :|| effs' ) a
+    -> T (req' ::[*]) (effs' ::[*]) a 
+    -> T (req :++ req') ( effs  :|| effs' ) a
 TR a <|> TR b=  TR $  a A.<|>  b
 
 (<*>) :: T (req ::[*]) (effs ::[*]) (a -> b) 

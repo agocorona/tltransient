@@ -1,8 +1,8 @@
-{-# LANGUAGE DataKinds, TypeOperators, FlexibleContexts, TypeFamilies  #-}
+{-# LANGUAGE DataKinds, TypeOperators, FlexibleContexts,AllowAmbiguousTypes  #-}
 module Transient.TypeLevel.Base where
 
 import Prelude
-import qualified Transient.Base as Tr
+import qualified Transient.Internals as Tr
 import Transient.TypeLevel.Effects
 import Data.Typeable
 import Control.Exception
@@ -37,12 +37,20 @@ data Terminal
 (<***) (TR x) (TR y) = TR $ x Tr.<*** y
 
 
--- * Running the monad
-keep :: Typeable a => T '[] (  effs) a -> IO (Maybe a)
-keep (TR x) = Tr.keep x 
 
-keep' :: Typeable a => T '[] (  effs) a -> IO (Maybe a)
-keep' (TR x) = Tr.keep' x 
+coerceEffs :: T req eff a -> T req' eff' a
+coerceEffs (TR comp)= TR comp
+
+
+-- * Running the monad
+keep :: Typeable a => T req effs a -> T (req :\ Wait) effs  (Maybe a)
+keep (TR x) = coerceEffs $ liftIO $ Tr.keep x 
+
+keep' :: Typeable a => T '[] effs a -> T (req :\ Wait) effs [a]
+keep' (TR x) = coerceEffs $ liftIO $ Tr.keep' x 
+
+eff :: Typeable a => T '[] effs a -> IO (Maybe a,Tr.EventF)
+eff (TR comp)= Tr.runTransient comp
 
 stop = empty
 
@@ -73,20 +81,20 @@ input' ma val prompt= TR $ Tr.input' ma val prompt
 parallel :: IO (Tr.StreamData b) -> T '[] '[MThread,Streaming] (Tr.StreamData b)
 parallel= TR. Tr.parallel
 
-async ::  IO a -> T '[] '[Async,MThread]  a
+async ::  IO a -> T '[Wait] '[Async,MThread]  a
 async = TR . Tr.async 
 
 
-waitEvents :: IO a -> T '[]  '[Async,Streaming,MThread]  a
+waitEvents :: IO a -> T '[Wait]  '[Async,Streaming,MThread]  a
 waitEvents = TR . Tr.waitEvents
 
-spawn :: IO a -> T '[]  '[Streaming,MThread] a
+spawn :: IO a -> T '[Wait]  '[Streaming,MThread] a
 spawn = TR . Tr.waitEvents
 
-sample :: Eq a => IO a -> Int -> T '[] '[Streaming,MThread] a
+sample :: Eq a => IO a -> Int -> T '[Wait] '[Streaming,MThread] a
 sample f n= TR $ Tr.sample f n
 
-abduce :: T '[] '[Async,MThread]  ()
+abduce :: T '[Wait] '[Async,MThread]  ()
 abduce = TR Tr.abduce
 
 -- * State management
